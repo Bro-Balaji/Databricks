@@ -1,0 +1,44 @@
+code for driver extensive compute
+
+%scala
+import org.apache.spark.sql.functions._
+
+val filePath = "/Volumes/catalogtest1/bigdata/managed_volume/csv/new_sample.csv"
+val df = spark.read
+  .option("header", "true")
+  .option("inferSchema", "true")
+  .csv(filePath)
+df.show(5)
+
+
+// Total Value by Year and Industry
+
+val dfWithValueAsNumeric = df.withColumn("Value", col("Value").cast("double"))
+val totalValueByYearAndIndustry = dfWithValueAsNumeric
+  .groupBy("Year", "Industry_name_NZSIOC")
+  .agg(
+    sum("Value").as("Total_Value")
+  )
+  .orderBy("Year", "Industry_name_NZSIOC")
+totalValueByYearAndIndustry.show()
+
+// Maximum and Minimum Value per Industry
+
+val maxMinValueByIndustry = df
+  .groupBy("Industry_name_NZSIOC")
+  .agg(
+    max("Value").as("Max_Value"),
+    min("Value").as("Min_Value")
+  )
+  .orderBy("Industry_name_NZSIOC")
+  .show()
+
+// Total Value by Year and Variable
+
+val totalValueByYearAndVariable = df
+  .groupBy("Year", "Variable_name")
+  .agg(
+    sum("Value").as("Total_Value")
+  )
+  .orderBy("Year", "Variable_name")
+  .show()
